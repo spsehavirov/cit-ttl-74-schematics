@@ -1,0 +1,59 @@
+\documentclass[border=0.2cm]{standalone}
+\usepackage{tikz}
+\usepackage{circuitikz}
+\usepackage{amsmath}
+
+\renewcommand\familydefault\sfdefault
+
+\ctikzset{
+    logic ports=ieee,
+    %logic ports/scale=0.7,
+}
+
+\begin{document}
+
+\begin{circuitikz}[
+    straight voltages,
+    flipflop D/.style={flipflop,flipflop def={t1=CLK, t2=D, t3=R,t5=\ctikztextnot{Q}, t4=Q, n2=1, n5=1,c1=1}}] %
+    
+    % Flip-flops
+    \foreach \i in {1, ..., 8}
+        \node[flipflop D] (FF\i) at (\i * 3,0) {};
+    
+    % Serial output
+    \foreach \current in {1, ..., 7}
+        \pgfmathtruncatemacro{\next}{\current + 1}
+        \draw (FF\current.pin 5) -- (FF\next.pin 2) node[right] {};
+    
+    % Parallel outputs
+    \foreach \i/\lbl in {1/A, 2/B, 3/C, 4/D, 5/E, 6/F, 7/G, 8/H}
+        \draw (FF\i.pin 4) -- ++(0,-2) node[below] {$\text{Q}_{\text{\lbl}}$};
+
+    % Draw SELECT, last line is without joint
+    \draw (FF1.pin 2) ++(-1, 0) node [nand port, scale=0.8, anchor=out] (and) {};
+    \draw (and.in 1) -- ++(-0.5, 0) node[left] {$\text{A}$};
+    \draw (and.in 2) -- ++(-0.5, 0) node[left] {$\text{B}$};
+    \draw (and.out) -- (FF1.pin 2);
+    
+ 
+    % Draw CLK, last line is without joint
+    \draw (FF1.pin 1) ++(-1, 1) node [buffer port, scale=0.8, anchor=out] (clk) {};
+    \draw (clk.in) -- (and.in 1|-clk.in) -- ++(-0.5, 0) node[left] {$\text{CLK}$};
+    
+    \foreach \i in {1, ..., 7}
+        \draw (FF\i.pin 1) -| (FF\i.pin 1|-clk.out) coordinate (jc\i) to [short, *-]  (clk.out);
+    \draw (FF8.pin 1) -| (FF8.pin 1|-clk.out) coordinate (jc8) -- (clk.out);
+    
+    % Draw CLR, last line is without joint
+    \draw (FF1.pin 3) ++(-1, -1) node [buffer port, scale=0.8, anchor=out] (clear) {};
+    \node [notcirc, left] at (clear.bin 1) {};
+    \draw (clear.in) -- (and.in 1|-clear.in) -- ++(-0.5, 0) node[left] {$\overline{\text{CLR}}$};
+    
+    \foreach \i in {1, ..., 7}
+        \draw (FF\i.pin 3) -| (FF\i.pin 3|-clear.out) coordinate (j\i) to [short, *-]  (clear.out);
+    \draw (FF8.pin 3) -| (FF8.pin 3|-clear.out) coordinate (j8) -- (clear.out);
+
+    
+\end{circuitikz}
+
+\end{document}
