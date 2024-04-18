@@ -1,0 +1,97 @@
+\documentclass[border=0.2cm]{standalone}
+\usepackage{tikz}
+\usepackage{circuitikz}
+\usepackage{amsmath}
+
+\renewcommand\familydefault\sfdefault
+
+\ctikzset{
+    logic ports=ieee
+}
+
+\begin{document}
+
+\begin{circuitikz}[
+    straight voltages,
+    flipflop D/.style={flipflop,flipflop def={t2=CLK, t1=D, t3=R, t6=Q,c2=1}},
+    topdown/.style={xscale=-1, rotate=-90, scale=0.8, anchor=out}] %
+    
+    % Flip-flops
+    \foreach \i in {1, ..., 8}
+        \node[flipflop D] (FF\i) at (\i * 4,0) {};
+    
+    % Serial output
+    %\foreach \current in {1, ..., 7}
+    %    \pgfmathtruncatemacro{\next}{\current + 1}
+    %    \draw (FF\current.pin 5) -- (FF\next.pin 2) node[right] {};
+    
+    %
+    %% Draw SELECT, last line is without joint
+    %
+    \draw (FF1.pin 2) ++(-1, -2) node [or port, scale=0.8, anchor=out] (sel) {};
+    \draw (sel.in 1) -- ++(-0.75, 0) node[left] {$\text{CLK INH}$};
+    \draw (sel.in 2) -- ++(-0.75, 0) node[left] {$\text{CLK}$};
+
+    \foreach \i in {1, ..., 7}
+        \draw (FF\i.pin 2) -- ++(-0.5, 0) coordinate (x\i) to[short, -*] (x\i|-sel.out) -- (sel.out);
+    \draw (FF8.pin 2) -- ++(-0.5, 0) coordinate (x8) -- (x8|-sel.out) -- (sel.out);
+
+    %
+    %% Draw CLR, last line is without joint
+    %
+    \draw (FF1.pin 3) ++(-1, -2.5) node [buffer port, scale=0.8, anchor=out] (clear) {};
+    \node [notcirc, left] at (clear.bin 1) {};
+    \draw (clear.in) -- (sel.in 1|-clear.in) -- ++(-0.75, 0) node[left] {$\overline{\text{CLR}}$};
+    
+    \foreach \i in {1, ..., 7}
+        \draw (FF\i.pin 3) -| (FF\i.pin 3|-clear.out) coordinate (j\i) to [short, *-]  (clear.out);
+    \draw (FF8.pin 3) -| (FF8.pin 3|-clear.out) coordinate (j8) -- (clear.out);
+
+     \foreach \i in {1, ..., 8} {
+        \draw (FF\i.pin 1) -| ++(-0, .5) node[or port, topdown] (in_or\i) {};
+        \draw (in_or\i.in 1) -- ++(-.5, 0) node[and port, topdown] (in_and_1_\i) {};
+        \draw (in_or\i.in 2) -- ++(.5, 0) node[and port, topdown] (in_and_2_\i) {};
+    }
+
+    % Serial link - pump
+    \draw (in_and_1_1.in 1) -- ++(-.25, 0) coordinate (ser_help) -- (sel.in 1|-ser_help) -- ++(-0.75, 0) coordinate (ser_c) node[left] {$\text{SER}$};;
+
+    \foreach \current in {2, ..., 8} {
+        \pgfmathtruncatemacro{\prev}{\current - 1}
+        \draw (FF\prev.pin 6) |- (in_and_1_\current.in 1);
+    }
+
+    \foreach \i in {1, ..., 8} {
+        \pgfmathtruncatemacro{\letter}{64 + \i} %ASCII letter code
+        \draw (in_and_2_\i.in 2) -- ++(0, 2) node[above] {$\text{\symbol{\letter}}$};
+
+        \draw(in_and_2_\i.in 1) -- ++(0, 0.5) coordinate (z\i);
+        \draw (in_and_1_\i.in 2) -- ++(0, 1.5) coordinate (y\i);  
+    }
+
+    \foreach \i in {1, ..., 8} {
+        
+    }
+    \foreach \i in {8, ..., 2} {
+        \pgfmathtruncatemacro{\prev}{\i - 1}
+        \draw (z\i) to[short, -*] (z\prev);
+        \draw (y\i) to[short, -*] (y\prev);
+    }
+
+    \draw (y1) node[buffer port, scale=0.8, anchor=out]  (sh_ld_buf) {};
+    \draw (sh_ld_buf.in) node [buffer port, scale=0.8, anchor=out] (sh_ld) {};
+    \node [notcirc, left] at (sh_ld_buf.bin 1) {};
+    \node [notcirc, right] at (sh_ld.bout) {}; %normal not port dot is smaller
+
+    
+    \draw (sh_ld.out) to[short, *-] (sh_ld.out|-z1) -- (z1);
+    \draw (sh_ld.in) -- (ser_c|-sh_ld)  node[left] {$\text{SH}/\overline{\text{LD}}$};
+
+    \draw (FF8.pin 6) -- ++(0.5, 0) -- ++(0, -2) node[buffer port, rotate=-90, xshift=-1, anchor=in] (out_buf) {};
+    \draw (out_buf.out) -- ++(0, -1.5) node[below] {$\text{Q}_{\text{H}}$};
+    
+
+    
+\end{circuitikz}
+
+\end{document}
