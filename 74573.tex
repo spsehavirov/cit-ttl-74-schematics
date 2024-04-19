@@ -1,0 +1,61 @@
+\documentclass[border=0.2cm]{standalone}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{circuitikz}
+\usetikzlibrary{calc}
+\usetikzlibrary{patterns, decorations.pathreplacing}
+
+
+\renewcommand\familydefault\sfdefault
+
+\begin{document}
+\begin{circuitikz}[
+    logic ports=ieee,
+    straight voltages,
+    flipflop D/.style={flipflop,flipflop def={t1=CLK, t3=D, t6=Q,c1=1}},
+    brace/.style={decoration={brace, mirror, raise=0.25cm}, decorate}, %thick,
+    buf/.style={ieeestd buffer port, anchor=in, scale=0.75}
+]
+
+    % FlipFlop:
+    \draw node[flipflop D] (cell0) {};
+    \draw (cell0.pin 1) 
+        -- ++(-.5, 0) coordinate (x) 
+        to[short, *-] ++(0, -2.25) coordinate (clk_tbc);
+    \draw[-latex] (clk_tbc) -- ++(0, -.25) coordinate (clk_arrow);
+    \draw (x) -- ++(0, .25);
+
+    % Q:
+    \draw (cell0.pin 6) 
+        -- ++(.5, 0) coordinate (c0_h) 
+        -- ++(0.45, 0) node[buf] (out0) {};
+        
+    \draw (out0.up) 
+        -- ++(0, 0.75) coordinate (o0h_up) 
+        to[short, -*] (c0_h|-o0h_up) coordinate (o0h_j) 
+        -- (o0h_j|-clk_tbc) coordinate (o0h_arrow);
+    
+    \draw [-latex] (o0h_arrow) 
+        -- ++(0, -.25) coordinate (data_arrow);
+    \draw (out0.out) 
+        -- ++(1, 0) node[right] {$\text{1Q}$};
+
+    % UNDERBARACE: 
+    \draw [brace] ($ (clk_arrow) + (-.25,0) $) -- ($(data_arrow) + (.25,0) $);
+    \draw ($ (clk_arrow)!.5!(data_arrow) $) ++(0, -.35) node[below] {K dalším 7 kanálům};
+
+    % LE:
+    \draw (x|-o0h_up) -- (x);
+    \draw (x|-o0h_up) -- ++(-.5,0) node[buf, anchor=out] (LE_buf) {};
+    \draw (LE_buf.in) -- ++(-1, 0) coordinate (in_p_le) node[left] {$\text{LE}$};
+    \draw (cell0.pin 3) -- (in_p_le|-cell0.pin 3) node[left] {$\text{1D}$};
+
+    % OE:
+    \draw (o0h_j) -- ++(0, 1.25) coordinate (oe_h) -- (x|-oe_h) -- ++(-.5,0) node[buf, anchor=out] (OE_buf) {};
+    \draw (OE_buf.in) -- (in_p_le|-OE_buf.in) node[left] {$\overline{\text{OE}}$};
+    \node [notcirc, left] at (OE_buf.bin) {};
+
+    
+    
+\end{circuitikz}
+\end{document}

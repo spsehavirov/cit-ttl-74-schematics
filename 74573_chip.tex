@@ -1,0 +1,31 @@
+\documentclass[border=0.2cm]{standalone}
+\usepackage{tikz}
+\usepackage{circuitikz}
+\usepackage{amsmath}
+
+\renewcommand\familydefault\sfdefault
+\newcommand{\PinNumber}{20}
+
+\begin{document}
+
+\begin{circuitikz}[
+    logic ports=ieee,
+    multipoles/thickness=4,
+    multipoles/external pins thickness=2
+]
+    \draw (0,0) node[dipchip,num pins=\PinNumber, external pins width=0.1, external pad fraction=4 ] (C) {'573};
+    %\node [right, font=\tiny] at (C.bpin 1) {RST};
+
+    \foreach [count=\i] \pinLabel in {
+         $\overline{\text{OE}}$, 1D, 2D, 3D, 4D, 5D, 6D, 7D, 8D, GND,
+         LE, 8Q, 7Q, 6Q, 5Q, 4Q, 3Q, 2Q, 1Q, $\text{V}_{\text{CC}}$} {
+    
+        \ifnum\i<\numexpr\PinNumber/2+1\relax
+            \draw (C.pin \i) node[left] {\pinLabel};
+        \else
+            \draw (C.pin \i) node[right] {\pinLabel};
+        \fi
+    }
+\end{circuitikz}
+
+\end{document}
