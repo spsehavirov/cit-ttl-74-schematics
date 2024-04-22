@@ -1,0 +1,49 @@
+\documentclass[border=0.2cm]{standalone}
+\usepackage{tikz}
+\usepackage{circuitikz}
+\usepackage{amsmath}
+
+\renewcommand\familydefault\sfdefault
+\newcommand{\PinNumber}{16}
+
+\begin{document}
+
+\ctikzset{logic ports=ieee}
+\ctikzset{multipoles/thickness=4}
+\ctikzset{multipoles/external pins thickness=2}
+
+\begin{circuitikz}[
+    chip/.style={dipchip, external pins width=0.1, external pad fraction=4}
+]
+    \draw (0,0) node[chip,num pins=\PinNumber,] (C) {'595};
+
+    \foreach [count=\i] \pinLabel in {
+         % LEFT:
+         $\text{Q}_{\text{B}}$,
+         $\text{Q}_{\text{C}}$, 
+         $\text{Q}_{\text{D}}$, 
+         $\text{Q}_{\text{E}}$,
+         $\text{Q}_{\text{F}}$,
+         $\text{Q}_{\text{G}}$,
+         $\text{Q}_{\text{H}}$,
+         GND,
+         % RIGHT:
+         $\text{Q}_{\text{H'}}$,
+         $\overline{\text{SRCLR}}$,
+         SRCLK,
+         RCLK,
+         $\overline{\text{OE}}$,
+         SER,
+         $\text{Q}_{\text{A}}$,
+         $\text{V}_{\text{CC}}$
+    } {
+    
+        \ifnum\i<\numexpr\PinNumber/2+1\relax
+            \draw (C.pin \i) node[left] {\pinLabel};
+        \else
+            \draw (C.pin \i) node[right] {\pinLabel};
+        \fi
+    }
+\end{circuitikz}
+
+\end{document}

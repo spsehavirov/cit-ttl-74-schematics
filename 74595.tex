@@ -1,0 +1,129 @@
+\documentclass[border=0.2cm]{standalone}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{circuitikz}
+\usetikzlibrary{calc}
+\usetikzlibrary{patterns, decorations.pathreplacing}
+
+
+\renewcommand\familydefault\sfdefault
+
+
+\begin{document}
+\ctikzset{ logic ports=ieee }
+
+\begin{circuitikz}[
+    straight voltages,
+    flipflop D/.style={flipflop,flipflop def={t2=CLK, t1=1D, td=${\overline{\text{RESET}}}$, t4=${\overline{\text{Q}}}$, t6=Q,c2=1, n2=1, n4=1,nd=1}},
+    flipflop SR/.style={flipflop,flipflop def={t2=CLK, t1=S, t3=R, t4=${\overline{\text{Q}}}$, t6=Q, td=${\overline{\text{RESET}}}$, c2=1, n2=1, n4=1, nd=1}},
+    flipflop SR2/.style={flipflop,flipflop def={t2=CLK, t1=S, t3=R, t4=${\overline{\text{Q}}}$, c2=1, n2=1, n4=1}},
+    brace/.style={decoration={brace, mirror, raise=0.25cm}, decorate},
+    buf/.style={ieeestd buffer port, anchor=in, scale=0.75}
+]
+
+    \matrix[column sep=2cm, row sep=1.5cm] (r1) at (0,0) {
+        \node[flipflop D] (cell_r0_0) {}; & \node[flipflop SR2] (cell_r0_1) {}; \\
+        \node[flipflop SR] (cell_r2_0) {}; & \node[flipflop SR2] (cell_r2_1) {}; \\
+        &  \\ % Mezera \node[anchor=base] {\ldots}
+        \node[flipflop SR] (cell_r7_0) {}; & \node[flipflop SR2] (cell_r7_1) {}; \\
+    };
+
+    % Row 1, 2:
+    \foreach \row/\buf/\pin in { 0/a/6, 2/b/6} {
+        \draw (cell_r\row_1.pin 4) ++(1,0) node[buffer port, scale=0.75] (buf_\buf) {};
+        \draw (cell_r\row_1.pin 4) -- (buf_\buf);
+        \node [notcirc, left] at (buf_\buf.bin) {};
+        
+        \draw (cell_r\row_0.pin 6) -- (cell_r\row_1.pin 1);
+        \draw (cell_r\row_0.pin 4) -- (cell_r\row_1.pin 3);
+        
+        \draw ($ (cell_r\row_0.bpin 4)!.25!(cell_r\row_1.bpin 3) $) node[circ] (r\row_qn) {};
+        \draw ($ (cell_r\row_0.bpin 6)!.50!(cell_r\row_1.bpin 1) $) node[circ] (r\row_q) {};
+        \draw ($ (cell_r\row_0.bpin 5)!.75!(cell_r\row_1.bpin 2) $) node[circ] (r\row_clk) {} ;
+        
+        \draw (cell_r\row_1.pin 2) -- (r\row_clk);
+        \draw (cell_r\row_0.pin 2) -- ++(-1.5,0) node[circ] (clk\row) {};
+        \draw (cell_r\row_0.down) -- ++(-2.25,0) node[circ] (clr\row) {};
+    };
+
+    \draw (cell_r0_1.pin 2) -- (r0_clk);
+    \draw (r2_clk) -- (r0_clk);
+    \draw (cell_r2_0.pin 2) -- ++(-1.5,0) node[circ] (clk1) {} -- (clk0);
+    \draw (cell_r2_0.down) -- ++(-2.25,0) node[circ] (clr1) {} -- (clr0);
+
+    % Row 8:
+    \draw (cell_r7_1.pin 4) ++(1,0) node[buffer port, scale=0.75] (buf_h) {};
+    \draw (cell_r7_1.pin 4) -- (buf_h);
+    \node [notcirc, left] at (buf_h.bin) {};
+    
+    \draw (cell_r7_0.pin 6) -- (cell_r7_1.pin 1);
+    \draw (cell_r7_0.pin 4) -- (cell_r7_1.pin 3);
+
+    \draw ($ (cell_r7_0.bpin 6)!.50!(cell_r7_1.bpin 1) $) node[circ] (r7_q) {};
+
+    % Wiring:
+
+    \draw (r0_q) 
+        -- (r0_q|-cell_r0_0.bdown) 
+        |- ($ (cell_r0_0.bdown) - (0, 1.2) $) coordinate (s1_1h)
+        -- (cell_r2_0.pin 1|-s1_1h) -- ++(0,0) -- ++(0, 0) |- (cell_r2_0.pin 1);
+    \draw (r0_qn) 
+        -- (r0_qn|-cell_r0_0.bdown) 
+        |- ($ (cell_r0_0.bdown) - (0, 0.8)  $) coordinate (r1_1h)
+        -- (cell_r2_0.pin 1|-r1_1h) -- ++(-.25,0) -- ++(0, 0) |- (cell_r2_0.pin 3);
+    
+    \draw (r2_q) 
+        -- (r2_q|-cell_r2_0.bdown) 
+        |- ($ (cell_r2_0.bdown) - (0, 1.2) $) coordinate (s2_1h)
+        -- (cell_r2_0.pin 1|-s2_1h) -- ++(0,0) -- ++(0, -0.5) coordinate (e1) ++(0, -1) |- (cell_r7_0.pin 1);
+    \draw (r2_qn) 
+        -- (r2_qn|-cell_r2_0.bdown) 
+        |- ($ (cell_r2_0.bdown) - (0, 0.8) $) coordinate (r2_1h)
+        -- (cell_r2_0.pin 1|-r2_1h) -- ++(-.25,0) coordinate (h1) -- (h1|-e1) ++(0, -1) |- (cell_r7_0.pin 3);
+
+    \draw (r7_q)
+        -- (r7_q|-cell_r7_1.bdown) -- ++(0, -1) coordinate (qh_neg) -- (buf_h.in|-qh_neg) node[buffer port, scale=0.75, anchor=in] (buf_h_neg) {};
+    \node[notcirc, left] at (buf_h_neg.bin) {};
+
+    \draw (r2_clk) -- (r2_clk|-e1) ++(0, -1) |- (cell_r7_1.pin 2);
+    \draw (clk1) -- (clk1|-e1) ++(0, -1) |- (cell_r7_0.pin 2);
+    \draw (clr1) -- (clr1|-e1) ++(0, -1) coordinate (r7_gap) |- (cell_r7_0.down);
+
+    \draw (buf_a.out) -- ++(1,0) node[right] {$\text{Q}_{\text{A}}$};
+    \draw (buf_b.out) -- ++(1,0) node[right] {$\text{Q}_{\text{B}}$};
+    \draw (buf_h.out) -- ++(1,0) node[right] {$\text{Q}_{\text{H}}$};
+    \draw (buf_h_neg.out) -- ++(1,0) node[right] {$\text{Q}_{\text{H'}}$};
+
+    \draw (buf_a.up) |- ++(0.75, .5) node[circ] {} coordinate (buf_a_up);
+    \draw (buf_b.up) |- ++(0.75, .5) node[circ] {} coordinate (buf_b_up);
+    \draw (buf_h.up) |- ++(0.75, .5)  coordinate (buf_h_up) -- (buf_h_up|-r7_gap);
+    \draw (buf_h_up|-r7_gap) ++(0,1) |- (buf_b_up);
+    \draw (buf_b_up) -- (buf_a_up);
+
+    % Inputs:
+    \draw (cell_r0_0.pin 1) -- ++(-6,0) coordinate (in_place) node[left] {$\text{SER}$};
+    \draw (clk0) -- ++(0, 1.5) node[not port, scale=.75, anchor=out] (buf_srclk) {};
+    \draw (buf_srclk.in) --(in_place|-buf_srclk) node[left] {$ \text{SRCLK} $};
+    \draw (clr0) -- (clr0|-buf_srclk) -- ++(0, .75) -- ++(-1.25,0) node[not port, scale=.75, anchor=out] (buf_srclr) {};
+    \node [notcirc, left] at (buf_srclr.bin) {};
+    \draw (buf_srclr.in) -- (in_place|-buf_srclr) node[left] {$ \overline{\text{SRCLR}} $};
+
+    \draw (r0_clk) -- (r0_clk|-buf_srclr) -- ++(0, .75) coordinate (rclk_help);
+    \draw (buf_srclk|-rclk_help) node[not port, scale=.75] (buf_rclk) {};
+    \draw (buf_rclk.out) -- (rclk_help);
+    \draw (buf_rclk.in) -- (in_place|-buf_rclk) node[left] {$ \text{RCLK} $};
+
+    \draw (buf_a_up) -- (buf_a_up|-buf_rclk) -- ++(0, .75) coordinate (oe_help);
+    \draw (buf_srclr|-oe_help) node[not port, scale=.75] (buf_oe) {};
+    \draw (buf_oe.out) -- (oe_help);
+    \draw (buf_oe.in) -- (in_place|-buf_oe) node[left] {$ \overline{\text{OE}} $};
+
+
+    \draw ($ (cell_r2_0.down)!.5!(cell_r2_1.down) $) coordinate (dots_up);
+    \draw ($ (cell_r7_0.up)!.5!(cell_r7_1.up) $) coordinate (dots_down);
+
+    \draw ($ (dots_up)!.7!(dots_down) $) node (dots) {\Huge \vdots};
+
+    
+\end{circuitikz}
+\end{document}
