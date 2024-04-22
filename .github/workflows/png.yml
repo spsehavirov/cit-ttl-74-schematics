@@ -27,10 +27,9 @@ jobs:
           sudo sed -i "s/$SRC/$RPL/" /etc/ImageMagick-6/policy.xml
       - name: Move PDF and cleanup previous jobs
         run: |
-          rm -Rf dist || true
-          rm *.png || true
+          rm -Rf ./dist || true
           mkdir -p dist/pdf dist/png
-          mv *.pdf dist/pdf/
+          mv *.pdf dist/pdf
       - name: Convert PDF to PNG (transparent)
         run: |
           cd dist/pdf
