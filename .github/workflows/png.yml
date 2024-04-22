@@ -14,34 +14,34 @@ on:
 
 jobs:
   build:
-  runs-on: ubuntu-latest
-  steps:
-  - uses: actions/checkout@v2
-  - name: Install ghostscript
-  run: sudo apt install ghostscript
-  - name: Change ImageMagick security policy
-  run: |
-  DQT='"'
-  SRC="rights=${DQT}none${DQT} pattern=${DQT}PDF${DQT}"
-  RPL="rights=${DQT}read|write${DQT} pattern=${DQT}PDF${DQT}"
-  sudo sed -i "s/$SRC/$RPL/" /etc/ImageMagick-6/policy.xml
-  - name: Convert PDF to PNG
-  run: convert -density 900 -background white -alpha off 74244.pdf -quality 90 74244.png
-  - name: Commit PNG
-  id: commit
-  run: |
-  git config --local user.email "action[bot]@github.com"
-  git config --local user.name "github-actions[bot]"
-  git add Twenty-Seconds-Icons_cv.png
-  if [-z "$(git status --porcelain)"]; then
-  echo "::set-output name=push::false"
-  else
-  git commit -m "[bot] converted PDF to img"
-  echo "::set-output name=push::true"
-  fi
-  shell: bash
-  - name: Push Commit
-  if: steps.commit.outputs.push == 'true'
-  uses: ad-m/github-push-action@master
-  with:
-  github_token: ${{ secrets.SECRET_TOKEN }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install ghostscript
+        run: sudo apt install ghostscript
+      - name: Change ImageMagick security policy
+        run: |
+          DQT='"' 
+          SRC="rights=${DQT}none${DQT} pattern=${DQT}PDF${DQT}"
+          RPL="rights=${DQT}read\|write${DQT} pattern=${DQT}PDF${DQT}"
+          sudo sed -i "s/$SRC/$RPL/" /etc/ImageMagick-6/policy.xml
+      - name: Convert PDF to PNG
+        run: convert -density 900 -background white -alpha off 74244.pdf -quality 90 74244.png
+      - name: Commit PNG
+        id: commit
+        run: |
+          git config --local user.email "action[bot]@github.com"
+          git config --local user.name "github-actions[bot]"
+          git add 74244.png
+          if [-z "$(git status --porcelain)"]; then
+            echo "::set-output name=push::false"
+          else
+            git commit -m "[bot] converted 74244.pdf -> 74244.png"
+            echo "::set-output name=push::true"
+          fi
+        shell: bash
+      - name: Push Commit
+        if: steps.commit.outputs.push == 'true'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.SECRET_TOKEN }}
