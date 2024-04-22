@@ -25,20 +25,21 @@ jobs:
           SRC="rights=${DQT}none${DQT} pattern=${DQT}PDF${DQT}"
           RPL="rights=${DQT}read\|write${DQT} pattern=${DQT}PDF${DQT}"
           sudo sed -i "s/$SRC/$RPL/" /etc/ImageMagick-6/policy.xml
-      - name: Move PDF and cleanup residue
+      - name: Move PDF and cleanup previous jobs
         run: |
+          rm -Rf dist
           rm *.png
           mkdir -p dist/pdf dist/png
           mv *.pdf dist/pdf/
       - name: Convert PDF to PNG (transparent)
         run: |
           cd dist/pdf
-          for n in $(ls -xH *.pdf); do convert -quality 100 -density 900 $n "${n%.*}.png"; done;
+          for n in $(ls -xH *.pdf); do convert -quality 100 -density 900 $n "../png/${n%.*}.png"; done;
           cd ../..
       - name: Convert PDF to PNG (white)
         run: |
           cd dist/pdf
-          for n in $(ls -xH *.pdf); do convert -quality 100 -density 900 -background white -alpha off  $n "${n%.*}_flat.png"; done;
+          for n in $(ls -xH *.pdf); do convert -quality 100 -density 900 -background white -alpha off  $n "../png/${n%.*}_flat.png"; done;
           cd ../..
       - name: Commit PNG
         id: commit
