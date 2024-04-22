@@ -26,11 +26,19 @@ jobs:
           RPL="rights=${DQT}read\|write${DQT} pattern=${DQT}PDF${DQT}"
           sudo sed -i "s/$SRC/$RPL/" /etc/ImageMagick-6/policy.xml
       - name: Move PDF
-        run: mkdir -p dist/pdf dist/png && mv *.pdf dist/pdf/
+        run: |
+          mkdir -p dist/pdf dist/png
+          mv *.pdf dist/pdf/
       - name: Convert PDF to PNG (transparent)
-        run: cd dist/pdf && for n in $(ls -xH *.pdf); do convert -quality 100 -density 900 -colorspace sRGB $n "${n%.*}.png"; done; && cd ../..;
+        run: |
+          cd dist/pdf
+          for n in $(ls -xH *.pdf); do convert -quality 100 -density 900 -colorspace sRGB $n "${n%.*}.png"; done;
+          cd ../..
       - name: Convert PDF to PNG (white)
-        run: cd dist/pdf && for n in $(ls -xH *.pdf); do convert -quality 100 -density 900 -background white -alpha off -colorspace sRGB $n "${n%.*}_flat.png"; done; && cd ../..;
+        run: |
+          cd dist/pdf
+          for n in $(ls -xH *.pdf); do convert -quality 100 -density 900 -colorspace sRGB -background white -alpha off  $n "${n%.*}_flat.png"; done;
+          cd ../..
       - name: Commit PNG
         id: commit
         run: |
