@@ -25,8 +25,9 @@ jobs:
           SRC="rights=${DQT}none${DQT} pattern=${DQT}PDF${DQT}"
           RPL="rights=${DQT}read\|write${DQT} pattern=${DQT}PDF${DQT}"
           sudo sed -i "s/$SRC/$RPL/" /etc/ImageMagick-6/policy.xml
-      - name: Move PDF
+      - name: Move PDF and cleanup residue
         run: |
+          rm *.png
           mkdir -p dist/pdf dist/png
           mv *.pdf dist/pdf/
       - name: Convert PDF to PNG (transparent)
@@ -44,7 +45,8 @@ jobs:
         run: |
           git config --local user.email "action[bot]@github.com"
           git config --local user.name "github-actions[bot]"
-          git add .
+          git add dist
+          git add --all
           if [-z "$(git status --porcelain)"]; then
             echo "{push}={false}" >> $GITHUB_OUTPUT
           else
