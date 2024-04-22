@@ -32,12 +32,12 @@ jobs:
       - name: Convert PDF to PNG (transparent)
         run: |
           cd dist/pdf
-          for n in $(ls -xH *.pdf); do convert -quality 100 -density 900 -colorspace sRGB $n "${n%.*}.png"; done;
+          for n in $(ls -xH *.pdf); do convert -quality 100 -density 900 $n "${n%.*}.png"; done;
           cd ../..
       - name: Convert PDF to PNG (white)
         run: |
           cd dist/pdf
-          for n in $(ls -xH *.pdf); do convert -quality 100 -density 900 -colorspace sRGB -background white -alpha off  $n "${n%.*}_flat.png"; done;
+          for n in $(ls -xH *.pdf); do convert -quality 100 -density 900 -background white -alpha off  $n "${n%.*}_flat.png"; done;
           cd ../..
       - name: Commit PNG
         id: commit
