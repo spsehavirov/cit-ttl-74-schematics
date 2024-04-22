@@ -1,0 +1,57 @@
+\documentclass[border=0.2cm]{standalone}
+\usepackage{tikz}
+\usepackage{circuitikz}
+\usepackage{amsmath}
+
+\renewcommand\familydefault\sfdefault
+\newcommand{\PinNumber}{24}
+
+\begin{document}
+\ctikzset{logic ports=ieee}
+\ctikzset{multipoles/thickness=4}
+\ctikzset{multipoles/external pins thickness=2}
+
+\begin{circuitikz}[
+    chip/.style={dipchip, external pins width=0.1, external pad fraction=4}
+]
+    \draw (0,0) node[chip,num pins=\PinNumber] (C) {'245};
+
+    \foreach [count=\i] \pinLabel in {
+         % LEFT:
+         $ \text{(5 V) } \text{V}_{\text{CCA}} $,
+         $ \text{DIR} $,
+         $ \text{A1} $,
+         $ \text{A2} $,
+         $ \text{A3} $,
+         $ \text{A4} $,
+         $ \text{A5} $,
+         $ \text{A6} $,
+         $ \text{A7} $,
+         $ \text{A8} $,
+         GND,
+         GND,
+         % RIGHT:
+         GND,
+         $ \text{B8} $,
+         $ \text{B7} $,
+         $ \text{B6} $,
+         $ \text{B5} $,
+         $ \text{B4} $,
+         $ \text{B3} $,
+         $ \text{B2} $,
+         $ \text{B1} $,
+         $\overline{\text{OE}}$,
+         $ \text{V}_{\text{CCB}} \text{ (3.3 V)} $,
+         $ \text{V}_{\text{CCB}} \text{ (3.3 V)} $
+    } {
+    
+        \ifnum\i<\numexpr\PinNumber/2+1\relax
+            \draw (C.pin \i) node[left] {\pinLabel};
+        \else
+            \draw (C.pin \i) node[right] {\pinLabel};
+        \fi
+    }
+
+\end{circuitikz}
+
+\end{document}

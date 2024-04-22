@@ -1,0 +1,66 @@
+\documentclass[border=0.2cm]{standalone}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{circuitikz}
+\usetikzlibrary{calc}
+\usetikzlibrary{patterns, decorations.pathreplacing}
+
+\renewcommand\familydefault\sfdefault
+
+\newcommand{\WireLabel}[2]{%
+    \ifnum#1=1
+        node[left] {#2}
+    \else
+        node[right] {#2}
+    \fi
+}
+
+\ctikzset{
+    logic ports=ieee
+}
+
+\begin{document}
+
+\begin{circuitikz}[
+    straight voltages,
+    brace/.style={decoration={brace, mirror, raise=0.25cm}, decorate}, %thick,
+]
+
+\matrix[column sep=1cm, row sep=.25cm] (r1) at (0,0) {
+        \node[and port, anchor=bout, scale=.9] (and1) {}; & \node[and port, scale=.9, rotate=180] (and2) {}; \\
+        & \\
+        & \\
+        & \\
+        \node[buffer port, scale=.75, anchor=bout] (buf1) {}; &  \\
+        &  \node[buffer port, scale=.75, rotate=180, anchor=bin, yshift=-1] (buf2) {}; \\
+    };
+
+\foreach \i/\sign/\label in {1/1/A, 2/-1/B} {
+    \draw (and\i.out) -- ++(\sign * .25, 0) coordinate (and\i_h) -- ++(0,-4.5) coordinate (and\i_hh);
+    \draw (buf\i.up) -- ++(0,\sign * 0.5) coordinate (buf\i_h) -- (and\i_h|-buf\i_h) node [circ] {};
+
+    \pgfmathparse{(\sign) > 0 ? 1:0}
+    \pgfmathsetmacro{\dir}{\pgfmathresult}
+
+    \draw (buf\i.in) -- ++(\sign * -1.5,0) coordinate (\label1) \WireLabel{\dir}{$ \text{\label1} $};
+}
+
+\draw (buf1.out) -| (and2.in 1|-buf2.out) node [circ] {};
+\draw (buf2.out) -| (and1.in 1|-buf1.out) node [circ] {};
+
+\node [notcirc, anchor=left] at (and2.bin 2) {};
+\draw (and1.in 1) node [circ] {} -- ++ (0, .55) to (and2.in 2|-\tikztostart) -- (and2.in 2);
+\draw (and1.in 1) -- (A1|-and1.in 1) node[left] {$ \text{DIR} $};
+
+\node [notcirc, anchor=right] at (and1.bin 2) {};
+\node [notcirc, anchor=left] at (and2.bin 1) {};
+\draw (and1.in 2) -- ++ (0, -.55) to (and2.in 2|-\tikztostart) -- (and2.in 1) node[circ] {};
+\draw (and2.in 1) -- (B1|-and2.in 1) node[right] {$ \overline{\text{OE}} $};
+
+% UNDERBARACE: 
+\draw [brace] ($ (and1_hh) + (-.5,0) $) coordinate (x1) -- ($(and2_hh) + (.5,0) $) coordinate (x2) ;
+\draw ($ (x1)!.5!(x2) $) ++(0, -.35) node[below, anchor=north, text centered] {K dalším 7 kanálům};
+
+\end{circuitikz}
+
+\end{document}
