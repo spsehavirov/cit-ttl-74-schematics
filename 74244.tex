@@ -1,0 +1,65 @@
+\documentclass[border=0.2cm]{standalone}
+\usepackage{tikz}
+\usepackage{circuitikz}
+\usepackage{amsmath}
+\usepackage{etoolbox}
+
+\renewcommand\familydefault\sfdefault
+
+\ctikzset{
+    logic ports=ieee
+}
+
+\begin{document}
+
+\newtoggle{left}
+\newtoggle{right}
+
+\toggletrue{left}
+\toggletrue{right}
+
+\begin{circuitikz}[straight voltages]
+
+\iftoggle{left}{%
+    \foreach \i in {1, ..., 4} {
+        \node[buffer port] (1a\i) at (0,\i * 2) {};
+        \draw (1a\i.up) |- ++(1.5,.75) coordinate (1a\i_join);
+        \draw (1a\i.in) -- ++(-2, 0) coordinate (1a\i_label) node[left] {$ \text{1A\i} $};
+        \draw (1a\i.out) -- ++(2, 0) node[right] {$ \text{1Y\i} $};
+    }
+
+    \foreach \i in {4, ..., 2} {
+        \pgfmathtruncatemacro{\ii}{\i-1};
+        \draw (1a\i_join) node [circ] {} -- (1a\ii_join);
+    }
+        
+
+    \draw (1a4) ++ (-1, 2) node[buffer port] (1oe) {};
+    \node [notcirc, left] at (1oe.bin) {};
+    \draw (1oe.in) -- (1a4_label|-1oe) (1a4_label|-1oe) node[left] {$ \text{1}\overline{\text{OE}} $};
+    \draw (1oe.out) -| (1a4_join);
+}
+
+\iftoggle{right}{%
+    \foreach \i in {1, ..., 4} {
+        \node[buffer port] (2a\i) at (8,\i * 2) {};
+        \draw (2a\i.up) |- ++(1.5,.75) coordinate (2a\i_join);
+        \draw (2a\i.in) -- ++(-2, 0) coordinate (2a\i_label) node[left] {$ \text{2A\i} $};
+        \draw (2a\i.out) -- ++(2, 0) node[right] {$ \text{2Y\i} $};
+    }
+
+    \foreach \i in {4, ..., 2} {
+        \pgfmathtruncatemacro{\ii}{\i-1};
+        \draw (2a\i_join) node [circ] {} -- (2a\ii_join);
+    }
+        
+
+    \draw (2a4) ++ (-1, 2) node[buffer port] (2oe) {};
+    \node [notcirc, left] at (2oe.bin) {};
+    \draw (2oe.in) -- (2a4_label|-2oe) (2a4_label|-2oe) node[left] {$ \text{2}\overline{\text{OE}} $};
+    \draw (2oe.out) -| (2a4_join);
+}
+    
+\end{circuitikz}
+
+\end{document}
