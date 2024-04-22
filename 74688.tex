@@ -1,0 +1,44 @@
+\documentclass[border=0.2cm]{standalone}
+\usepackage{tikz}
+\usepackage{circuitikz}
+\usepackage{amsmath}
+
+\renewcommand\familydefault\sfdefault
+
+\ctikzset{logic ports=ieee}
+
+\begin{document}
+    \begin{circuitikz}[
+        straight voltages,
+        %every node/.style={scale=0.6}
+        %not port/.style={not port, scale=0.6}
+    ]
+        \foreach \i in {0, ..., 7} {
+            \node[xor port, rotate=-90] (xor\i) at (\i * 2, 0) {};
+            \draw (xor\i.in 2) -- ++(0, .5) node[above] {A\i};
+            \draw (xor\i.in 1) -- ++(0, .5) node[above] {B\i};
+        }
+    
+        \draw ($ (xor0)!.5!(xor3) + (0, -3)$) node[nor port, number inputs=4, rotate=-90] (nor0) {};
+        \draw ($ (xor4)!.5!(xor7) + (0, -3)$) node[nor port, number inputs=4, rotate=-90] (nor1) {};
+    
+        \foreach \i/\j in {0/0, 4/1} {
+            \draw (xor\the\numexpr\i+0\relax.out) -- ++(0, -.25) -| (nor\the\numexpr\j\relax.in 4);
+            \draw (xor\the\numexpr\i+1\relax.out) -| (nor\the\numexpr\j\relax.in 3);
+            \draw (xor\the\numexpr\i+2\relax.out) -| (nor\the\numexpr\j\relax.in 2);
+            \draw (xor\the\numexpr\i+3\relax.out) -- ++(0, -.25) -| (nor\the\numexpr\j\relax.in 1);
+        }
+    
+        \draw ($ (nor0)!.5!(nor1) + (0, -3)$) node[nand port, number inputs=3, rotate=-90] (nand0) {};
+    
+        \draw (nand0.in 3) -- (xor1|-nand0.in 1) node[not port, anchor=out] (E) {};
+        \draw (E.in) -- ++(-.25, 0) node[left] {$ \overline{\text{E}} $};
+        \draw (nand0.in 2) |- (nor0.out);
+        \draw (nand0.in 1) |- (nor1.out);
+    
+        \draw (nand0.out) node[not port, anchor=in, rotate=-90] (not0) {};
+        \draw (not0.out) node[not port, anchor=in, rotate=-90] (not1) {};
+        \draw (not1.out) -- ++(0, -.5) node[below] {$ \text{Y} $};
+        
+    \end{circuitikz}
+\end{document}
