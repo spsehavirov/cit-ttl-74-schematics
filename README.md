@@ -29,3 +29,7 @@ Schémata pro rodinu logických obvodů TTL 74'.
 # 74595
 ![](dist/png/74595_chip_flat.png)
 ![](dist/png/74595_flat.png)
+
+# 74688
+![](dist/png/74688_chip_flat.png)
+![](dist/png/74688_flat.png)
