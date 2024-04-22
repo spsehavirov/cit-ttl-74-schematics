@@ -25,19 +25,23 @@ jobs:
           SRC="rights=${DQT}none${DQT} pattern=${DQT}PDF${DQT}"
           RPL="rights=${DQT}read\|write${DQT} pattern=${DQT}PDF${DQT}"
           sudo sed -i "s/$SRC/$RPL/" /etc/ImageMagick-6/policy.xml
-      - name: Convert PDF to PNG
-        run: convert -density 900 -background white -alpha off 74244.pdf -quality 90 74244.png
+      - name: Move PDF
+        run: mkdir -p dist/pdf dist/png && mv *.pdf dist/pdf/
+      - name: Convert PDF to PNG (transparent)
+        run: cd dist/pdf && for n in $(ls -xH *.pdf); do convert -quality 100 -density 900 -colorspace sRGB $n "${n%.*}.png"; done; && cd ../..;
+      - name: Convert PDF to PNG (white)
+        run: cd dist/pdf && for n in $(ls -xH *.pdf); do convert -quality 100 -density 900 -background white -alpha off -colorspace sRGB $n "${n%.*}_flat.png"; done; && cd ../..;
       - name: Commit PNG
         id: commit
         run: |
           git config --local user.email "action[bot]@github.com"
           git config --local user.name "github-actions[bot]"
-          git add 74244.png
+          git add .
           if [-z "$(git status --porcelain)"]; then
-            echo "::set-output name=push::false"
+            echo "{push}={false}" >> $GITHUB_OUTPUT
           else
-            git commit -m "[bot] converted 74244.pdf -> 74244.png"
-            echo "::set-output name=push::true"
+            git commit -m "[bot] converted *.pdf -> *.png"
+            echo "{push}={true}" >> $GITHUB_OUTPUT
           fi
         shell: bash
       - name: Push Commit
